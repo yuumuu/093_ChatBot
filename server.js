@@ -98,6 +98,20 @@ app.post("/api/chat", async (req, res) => {
         res.write("data: [DONE\n\n");
         res.end();
     } catch (err) {
+        console.error("Server Error: ", err);
 
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: "Terjadi kesalahan pada server"
+            });
+        } else {
+            res.write(
+                `data: ${JSON.stringify(
+                    "Terjadi kesalahan apada server"
+                )}\n\n`
+            );
+
+            res.end();
+        }
     }
 });
