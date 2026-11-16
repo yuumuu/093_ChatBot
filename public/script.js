@@ -18,8 +18,8 @@ function addMessage(text, sender) {
 }
 
 chatForm.addEventListener("submit", async (e) => {
-    event.preventDefault();
-    const message = userInput.ariaValueMax.trim();
+    e.preventDefault();
+    const message = userInput.value.trim();
     if (!message) return;
 
     // Tampilkan pesan error
@@ -90,7 +90,9 @@ chatForm.addEventListener("submit", async (e) => {
                     console.error("Gagal membaca token: ", err);
                 }
             }
-            // simpan response AI
+        }
+        // simpan response AI setelah streaming selesai
+        if (botResponse) {
             messages.push({
                 role: "assistant",
                 content: botResponse
@@ -98,7 +100,7 @@ chatForm.addEventListener("submit", async (e) => {
         }
     } catch (err) {
         console.error(err);
-        botContent.textContent = "Maaf, terjadi kesalahan: " + error.message;
+        botContent.textContent = "Maaf, terjadi kesalahan: " + err.message;
     } finally {
         // aktifkan kembali input
         userInput.disabled = false;

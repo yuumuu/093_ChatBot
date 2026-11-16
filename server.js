@@ -26,7 +26,7 @@ app.post("/api/chat", async (req, res) => {
         }
 
         const response = await fetch(
-            "httpsL//openrouter.ai/api/v1/chat/completions",
+            "https://openrouter.ai/api/v1/chat/completions",
             {
                 method: "POST",
                 headers: {
@@ -44,16 +44,21 @@ app.post("/api/chat", async (req, res) => {
         );
 
         if (!response.ok) {
-            const errorData = await response.text();
-            console.error("OpenRouter Error: ", errorData);
+            const errorText = await response.text();
+            console.error("OpenRouter Error: ", errorText);
+            let errorMessage = errorText;
+            try {
+                const parsed = JSON.parse(errorText);
+                errorMessage = parsed.error?.message || errorText;
+            } catch (e) {}
 
             return res.status(response.status).json({
-                error: errorData
+                error: errorMessage
             });
         }
 
         // Header untuk streaming
-        res.setHeader("Content-Type", "text-event-stream");
+        res.setHeader("Content-Type", "text/event-stream");
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
 
@@ -68,7 +73,7 @@ app.post("/api/chat", async (req, res) => {
             if (done) break;
 
             buffer += decoder.decode(value, {
-                strea: true
+                stream: true
             });
 
             const lines = buffer.split("\n");
@@ -90,12 +95,12 @@ app.post("/api/chat", async (req, res) => {
 
                     if (content) res.write(`data: ${JSON.stringify(content)}\n\n`);
                 } catch (err) {
-                    console.error("Gagal parsing streaming data:", error);
+                    console.error("Gagal parsing streaming data:", err);
                 }
             }
         }
 
-        res.write("data: [DONE\n\n");
+        res.write("data: [DONE]\n\n");
         res.end();
     } catch (err) {
         console.error("Server Error: ", err);
@@ -107,7 +112,7 @@ app.post("/api/chat", async (req, res) => {
         } else {
             res.write(
                 `data: ${JSON.stringify(
-                    "Terjadi kesalahan apada server"
+                    "Terjadi kesalahan pada server"
                 )}\n\n`
             );
 
