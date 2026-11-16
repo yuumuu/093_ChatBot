@@ -28,8 +28,8 @@ app.post("/api/chat", async (req, res) => {
         const modelsToTry = [
             process.env.MODEL || "inclusionai/ling-3.2-flash:free",
             "liquid/lfm-3-1.7b:free",
-            "nvidia/nemotron-3.5-lightning:free",
-            "perplexity/pplx-decider-v1.3:free"
+            "baidu/ernie-5.5-flash-preview:free",
+            "nvidia/nemotron-3.5-lightning:free"
         ];
 
         let response = null;
@@ -61,22 +61,31 @@ app.post("/api/chat", async (req, res) => {
             lastErrorText = await response.text();
             console.warn(`Model ${model} gagal (${response.status}):`, lastErrorText);
 
-            // Jika bukan 429 atau sudah model terakhir, jangan coba lagi
-            if (response.status !== 429) {
+            const isRetryable =
+                response.status === 429 ||
+                response.status >= 500 ||
+                lastErrorText.includes("Provider returned error") ||
+                lastErrorText.includes("rate-limited");
+
+            if (!isRetryable) {
                 break;
             }
         }
 
         if (!response || !response.ok) {
             console.error("Semua model gagal merespons:", lastErrorText);
-            let errorMessage = lastErrorText;
+            let errorMessage = "Layanan AI sedang sibuk. Silakan coba sesaat lagi.";
             try {
                 const parsed = JSON.parse(lastErrorText);
-                errorMessage = parsed.error?.message || lastErrorText;
+                if (parsed.error?.metadata?.raw) {
+                    errorMessage = parsed.error.metadata.raw;
+                } else if (parsed.error?.message) {
+                    errorMessage = parsed.error.message;
+                }
             } catch (e) {}
 
             return res.status(response ? response.status : 500).json({
-                error: errorMessage || "Layanan AI sedang sibuk. Silakan coba sesaat lagi."
+                error: errorMessage
             });
         }
 
