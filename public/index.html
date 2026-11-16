@@ -4,130 +4,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Workspace: Chat & Notes</title>
+    <title>PWS Chatbot Workspace</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="app-layout">
-        <!-- Header Utama -->
-        <header class="app-header">
-            <div class="header-brand">
-                <div class="avatar-badge" aria-hidden="true">AI</div>
-                <div>
-                    <h1 class="app-title">Chatbot AI Workspace</h1>
-                    <div class="status-indicator">
-                        <span class="status-dot" aria-hidden="true"></span>
-                        <span class="status-text">Online (Siap)</span>
+    <div class="workspace-shell">
+        <header class="app-navbar">
+            <div class="navbar-left">
+                <div class="brand-block">
+                    <span class="brand-monogram">WS</span>
+                    <div>
+                        <h1 class="brand-title">PWS Chatbot Workspace</h1>
+                        <p class="connection-status">
+                            <span class="status-indicator"></span>
+                            Terhubung
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Kontrol Aksi Header -->
-            <div class="header-actions">
-                <div class="control-group">
-                    <label for="model-select" class="control-label">Model AI:</label>
-                    <select id="model-select" class="select-input" aria-label="Pilih Model AI">
-                        <option value="baidu/ernie-5.5-flash-preview:free">Ernie 5.5 Flash (Cepat & Akurat)</option>
+            <div class="navbar-right">
+                <div class="field-inline">
+                    <label for="model-select" class="field-label">Model</label>
+                    <select id="model-select" class="form-select" aria-label="Pilih model bahasa">
+                        <option value="baidu/ernie-5.5-flash-preview:free">Ernie 5.5 Flash</option>
                         <option value="nvidia/nemotron-3.5-lightning:free">Nemotron 3.5 Lightning</option>
-                        <option value="inclusionai/ling-3.2-flash:free">Ling 3.2 Flash (Reasoning)</option>
+                        <option value="inclusionai/ling-3.2-flash:free">Ling 3.2 Flash</option>
                         <option value="liquid/lfm-3-1.7b:free">Liquid LFM 1.7B</option>
                     </select>
                 </div>
 
-                <button type="button" id="clear-chat" class="btn-ghost" title="Bersihkan riwayat percakapan" aria-label="Bersihkan obrolan">
-                    Bersihkan
+                <button type="button" id="clear-chat" class="action-btn" aria-label="Bersihkan riwayat percakapan">
+                    Bersihkan Obrolan
                 </button>
 
-                <button type="button" id="theme-toggle" class="btn-theme" title="Beralih tema terang/gelap" aria-label="Ganti mode tampilan">
-                    <span id="theme-icon" aria-hidden="true">☀️</span>
+                <button type="button" id="theme-toggle" class="action-btn" aria-label="Ganti mode tampilan">
+                    <span id="theme-label">Mode Terang</span>
                 </button>
             </div>
         </header>
 
-        <!-- Navigasi Tab Mobile -->
-        <nav class="mobile-tab-nav" aria-label="Navigasi Tampilan Layar Kecil">
-            <button type="button" class="tab-btn active" data-target="panel-chat" aria-selected="true">
-                Obrolan
+        <nav class="mobile-viewport-nav" aria-label="Navigasi panel pada perangkat seluler">
+            <button type="button" class="mobile-nav-btn active" data-target="panel-chat" aria-selected="true">
+                Percakapan
             </button>
-            <button type="button" class="tab-btn" data-target="panel-notes" aria-selected="false">
-                Catatan & Kode
+            <button type="button" class="mobile-nav-btn" data-target="panel-notes" aria-selected="false">
+                Catatan Sesi
             </button>
         </nav>
 
-        <!-- Kontainer Split Workspace -->
-        <main class="workspace-container">
-            <!-- Kolom Kiri: Chat -->
-            <section id="panel-chat" class="workspace-column chat-column" aria-label="Panel Percakapan AI">
-                <div id="chat-box" class="chat-box" role="log" aria-label="Riwayat percakapan" aria-live="polite">
-                    <div class="message bot">
-                        <div class="message-meta">
-                            <span class="sender-name">Asisten AI</span>
+        <main class="workspace-body">
+            <section id="panel-chat" class="workspace-pane pane-chat" aria-label="Panel percakapan">
+                <div id="chat-box" class="chat-viewport" role="log" aria-label="Riwayat pesan" aria-live="polite">
+                    <div class="chat-row bot">
+                        <div class="row-header">
+                            <span class="author-label">Asisten</span>
                         </div>
-                        <div class="message-content">
-                            Halo! Saya asisten AI Anda di workspace ini. Anda dapat bertanya, meminta bantuan coding, atau menulis catatan langsung di panel sebelah kanan.
+                        <div class="message-bubble">
+                            Workspace percakapan siap digunakan. Anda dapat mengajukan pertanyaan teknis, menguji logika kode, atau menyimpan catatan pekerjaan di panel sebelah kanan.
                         </div>
                     </div>
 
-                    <!-- Prompt Starter Chips -->
-                    <div id="starter-chips" class="starter-chips" aria-label="Saran Pertanyaan">
-                        <p class="chips-title">Mulai dengan topik cepat:</p>
-                        <div class="chips-grid">
-                            <button type="button" class="chip-item" data-prompt="Jelaskan konsep RESTful API dan metode HTTP utamanya.">
-                                💡 Konsep RESTful API
+                    <div id="starter-chips" class="topic-suggestions">
+                        <h2 class="suggestions-heading">Rekomendasi Topik Awal</h2>
+                        <div class="suggestions-grid">
+                            <button type="button" class="topic-card" data-prompt="Jelaskan prinsip desain RESTful API beserta standar penggunaan HTTP methods (GET, POST, PUT, DELETE).">
+                                <span class="card-title">Prinsip RESTful API</span>
+                                <span class="card-desc">Standar HTTP methods dan struktur representasi resource</span>
                             </button>
-                            <button type="button" class="chip-item" data-prompt="Buat contoh route Express.js sederhana untuk operasi CRUD data produk.">
-                                ⚡ Contoh CRUD Express.js
+                            <button type="button" class="topic-card" data-prompt="Tuliskan contoh struktur routing Express.js untuk operasi CRUD pada database in-memory sederhana.">
+                                <span class="card-title">Struktur Routing Express</span>
+                                <span class="card-desc">Pola penulisan endpoint CRUD dengan error handling</span>
                             </button>
-                            <button type="button" class="chip-item" data-prompt="Apa perbedaan Server-Sent Events (SSE) dengan WebSocket?">
-                                🔄 Perbedaan SSE vs WebSocket
+                            <button type="button" class="topic-card" data-prompt="Jelaskan perbandingan arsitektur Server-Sent Events (SSE) dengan WebSocket untuk transmisi data satu arah.">
+                                <span class="card-title">Mekanisme SSE vs WebSocket</span>
+                                <span class="card-desc">Perbedaan protokol, efisiensi koneksi, dan use-case</span>
                             </button>
-                            <button type="button" class="chip-item" data-prompt="Bantu jelaskan cara kerja middleware pada Express framework.">
-                                🛡️ Cara Kerja Middleware
+                            <button type="button" class="topic-card" data-prompt="Bagaimana cara kerja middleware autentikasi pada Express.js dan bagaimana format penulisan next()?">
+                                <span class="card-title">Middleware Autentikasi</span>
+                                <span class="card-desc">Alur verifikasi header request dan pemanggilan fungsi next</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Form Input Chat -->
-                <form id="chat-form" class="chat-form" aria-label="Kirim Pesan">
-                    <label for="user-input" class="sr-only">Tulis pertanyaan atau instruksi Anda</label>
+                <form id="chat-form" class="compose-bar" aria-label="Formulir pengiriman pesan">
+                    <label for="user-input" class="sr-only">Tuliskan pesan atau instruksi</label>
                     <textarea 
                         id="user-input" 
-                        placeholder="Tulis pesan... (Enter untuk kirim, Shift+Enter untuk baris baru)" 
-                        rows="1"
+                        class="compose-input" 
+                        placeholder="Tuliskan pertanyaan atau perintah (Enter untuk mengirim, Shift+Enter untuk baris baru)" 
+                        rows="1" 
                         required 
                         aria-required="true"
                     ></textarea>
-                    <button type="submit" id="submit-btn" class="btn-primary" aria-label="Kirim pesan">
-                        <span>Kirim</span>
+                    <button type="submit" id="submit-btn" class="send-btn" aria-label="Kirim pesan">
+                        Kirim
                     </button>
                 </form>
             </section>
 
-            <!-- Kolom Kanan: Catatan & Cuplikan Kode -->
-            <aside id="panel-notes" class="workspace-column notes-column" aria-label="Panel Catatan & Kode">
-                <div class="notes-header">
+            <aside id="panel-notes" class="workspace-pane pane-notes" aria-label="Panel catatan kerja">
+                <div class="pane-header">
                     <div>
-                        <h2 class="notes-title">Catatan Workspace</h2>
-                        <span id="notes-counter" class="notes-meta">0 karakter</span>
+                        <h2 class="pane-title">Catatan Sesi</h2>
+                        <span id="notes-counter" class="pane-subtitle">0 karakter</span>
                     </div>
-                    <div class="notes-actions">
-                        <button type="button" id="copy-notes-btn" class="btn-small" title="Salin semua catatan ke clipboard">
-                            Salin
+                    <div class="pane-actions">
+                        <button type="button" id="copy-notes-btn" class="micro-btn" title="Salin seluruh catatan ke clipboard">
+                            Salin Catatan
                         </button>
-                        <button type="button" id="clear-notes-btn" class="btn-small btn-small-danger" title="Kosongkan catatan">
-                            Hapus
+                        <button type="button" id="clear-notes-btn" class="micro-btn danger" title="Kosongkan isi catatan">
+                            Kosongkan
                         </button>
                     </div>
                 </div>
 
-                <div class="notes-body">
-                    <label for="notes-textarea" class="sr-only">Area Catatan Workspace</label>
+                <div class="pane-content">
+                    <label for="notes-textarea" class="sr-only">Area teks catatan kerja</label>
                     <textarea 
                         id="notes-textarea" 
-                        class="notes-textarea" 
-                        placeholder="Gunakan area ini untuk menyimpan cuplikan kode, ringkasan jawaban, atau catatan kuliah/kerja Anda..."
+                        class="notes-editor" 
+                        placeholder="Panel catatan ini tersimpan otomatis di browser lokal. Anda dapat menulis catatan mandiri atau menekan tombol Salin ke Catatan pada cuplikan kode di panel percakapan." 
                         spellcheck="false"
                     ></textarea>
                 </div>
