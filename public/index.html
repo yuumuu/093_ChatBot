@@ -1,31 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatBot</title>
+    <title>Chatbot AI - Asisten Percakapan</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <h1>Chatbot AI</h1>
-        </div>
-        <div id="chat-box" class="chat-box">
-            <div class="message bot">
-                <div class="message-content">
-                    Halo! Ada yang bisa saya bantu?
+    <main class="chat-app" role="main">
+        <div class="chat-container">
+            <header class="chat-header">
+                <div class="header-info">
+                    <div class="avatar-bot" aria-hidden="true">AI</div>
+                    <div>
+                        <h1>Chatbot AI</h1>
+                        <p class="status-indicator">
+                            <span class="status-dot" aria-hidden="true"></span>
+                            Online (Ling 3.2 Flash)
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <form id="chat-form" class="chat-form">
-            <input type="text" id="user-input" placeholder="Ketik pesan..." autocomplete="off" required />
+                <button type="button" id="clear-chat" class="btn-secondary" title="Bersihkan riwayat chat" aria-label="Bersihkan obrolan">
+                    Bersihkan
+                </button>
+            </header>
 
-            <button type="submit">Kirim</button>
-        </form>
-    </div>
+            <section id="chat-box" class="chat-box" role="log" aria-label="Riwayat percakapan" aria-live="polite">
+                <div class="message bot">
+                    <div class="message-meta">
+                        <span class="sender-name">Asisten AI</span>
+                    </div>
+                    <div class="message-content">
+                        Halo! Saya asisten AI Anda. Silakan ketik pesan atau pertanyaan di bawah untuk memulai percakapan.
+                    </div>
+                </div>
+            </section>
+
+            <form id="chat-form" class="chat-form" aria-label="Formulir kirim pesan">
+                <label for="user-input" class="sr-only">Tulis pesan Anda</label>
+                <input 
+                    type="text" 
+                    id="user-input" 
+                    placeholder="Tulis pertanyaan atau pesan..." 
+                    autocomplete="off" 
+                    required 
+                    aria-required="true"
+                />
+                <button type="submit" id="submit-btn">
+                    <span>Kirim</span>
+                </button>
+            </form>
+        </div>
+    </main>
 
     <script src="script.js"></script>
 </body>

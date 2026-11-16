@@ -25,35 +25,57 @@ app.post("/api/chat", async (req, res) => {
             })
         }
 
-        const response = await fetch(
-            "https://openrouter.ai/api/v1/chat/completions",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: "inclusionai/ling-3.2-flash:free",
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 1000,
-                    stream: true
-                })
-            }
-        );
+        const modelsToTry = [
+            process.env.MODEL || "inclusionai/ling-3.2-flash:free",
+            "liquid/lfm-3-1.7b:free",
+            "nvidia/nemotron-3.5-lightning:free"
+        ];
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("OpenRouter Error: ", errorText);
-            let errorMessage = errorText;
+        let response = null;
+        let lastErrorText = "";
+
+        for (const model of modelsToTry) {
+            response = await fetch(
+                "https://openrouter.ai/api/v1/chat/completions",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 1000,
+                        stream: true
+                    })
+                }
+            );
+
+            if (response.ok) {
+                break;
+            }
+
+            lastErrorText = await response.text();
+            console.warn(`Model ${model} gagal (${response.status}):`, lastErrorText);
+
+            // Jika bukan 429 atau sudah model terakhir, jangan coba lagi
+            if (response.status !== 429) {
+                break;
+            }
+        }
+
+        if (!response || !response.ok) {
+            console.error("Semua model gagal merespons:", lastErrorText);
+            let errorMessage = lastErrorText;
             try {
-                const parsed = JSON.parse(errorText);
-                errorMessage = parsed.error?.message || errorText;
+                const parsed = JSON.parse(lastErrorText);
+                errorMessage = parsed.error?.message || lastErrorText;
             } catch (e) {}
 
-            return res.status(response.status).json({
-                error: errorMessage
+            return res.status(response ? response.status : 500).json({
+                error: errorMessage || "Layanan AI sedang sibuk. Silakan coba sesaat lagi."
             });
         }
 
