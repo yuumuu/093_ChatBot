@@ -118,7 +118,8 @@ chatForm.addEventListener("submit", async (e) => {
         // Jika respons selesai tapi belum pernah menerima token (misalnya stream kosong)
         if (!hasReceivedFirstToken) {
             botMsg.contentEl.classList.remove("typing");
-            botMsg.contentEl.textContent = "Tidak ada respons dari model.";
+            botMsg.contentEl.classList.add("error");
+            botMsg.contentEl.textContent = "Model tidak menghasilkan teks respons. Silakan coba kirim ulang pertanyaan Anda.";
         } else {
             // Simpan respons lengkap asisten ke histori obrolan
             messages.push({

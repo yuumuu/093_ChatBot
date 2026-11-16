@@ -26,49 +26,55 @@ app.post("/api/chat", async (req, res) => {
         }
 
         const modelsToTry = [
-            process.env.MODEL || "inclusionai/ling-3.2-flash:free",
-            "liquid/lfm-3-1.7b:free",
-            "baidu/ernie-5.5-flash-preview:free",
-            "nvidia/nemotron-3.5-lightning:free"
+            process.env.MODEL || "baidu/ernie-5.5-flash-preview:free",
+            "nvidia/nemotron-3.5-lightning:free",
+            "inclusionai/ling-3.2-flash:free",
+            "liquid/lfm-3-1.7b:free"
         ];
 
         let response = null;
         let lastErrorText = "";
 
         for (const model of modelsToTry) {
-            response = await fetch(
-                "https://openrouter.ai/api/v1/chat/completions",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: messages,
-                        temperature: 0.7,
-                        max_tokens: 1000,
-                        stream: true
-                    })
+            try {
+                response = await fetch(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: messages,
+                            temperature: 0.7,
+                            max_tokens: 1000,
+                            stream: true
+                        })
+                    }
+                );
+
+                if (response.ok) {
+                    console.log(`Berhasil terhubung ke model: ${model}`);
+                    break;
                 }
-            );
 
-            if (response.ok) {
-                break;
-            }
+                lastErrorText = await response.text();
+                console.warn(`Model ${model} gagal (${response.status}):`, lastErrorText);
 
-            lastErrorText = await response.text();
-            console.warn(`Model ${model} gagal (${response.status}):`, lastErrorText);
+                const isRetryable =
+                    response.status === 429 ||
+                    response.status >= 500 ||
+                    lastErrorText.includes("Provider returned error") ||
+                    lastErrorText.includes("rate-limited");
 
-            const isRetryable =
-                response.status === 429 ||
-                response.status >= 500 ||
-                lastErrorText.includes("Provider returned error") ||
-                lastErrorText.includes("rate-limited");
-
-            if (!isRetryable) {
-                break;
+                if (!isRetryable) {
+                    break;
+                }
+            } catch (fetchErr) {
+                console.warn(`Gagal request ke model ${model}:`, fetchErr.message);
+                lastErrorText = fetchErr.message;
             }
         }
 
@@ -98,6 +104,7 @@ app.post("/api/chat", async (req, res) => {
         const decoder = new TextDecoder();
 
         let buffer = "";
+        let hasSentAnyToken = false;
 
         while (true) {
             const { done, value } = await reader.read();
@@ -123,13 +130,30 @@ app.post("/api/chat", async (req, res) => {
 
                 try {
                     const json = JSON.parse(data);
+
+                    if (json.error) {
+                        console.error("Error dalam stream:", json.error);
+                        const streamErrMsg = json.error.message || "Kendala pemrosesan upstream";
+                        res.write(`data: ${JSON.stringify(" " + streamErrMsg)}\n\n`);
+                        hasSentAnyToken = true;
+                        continue;
+                    }
+
                     const content = json.choices?.[0]?.delta?.content;
 
-                    if (content) res.write(`data: ${JSON.stringify(content)}\n\n`);
+                    if (content) {
+                        hasSentAnyToken = true;
+                        res.write(`data: ${JSON.stringify(content)}\n\n`);
+                    }
                 } catch (err) {
                     console.error("Gagal parsing streaming data:", err);
                 }
             }
+        }
+
+        // Jika sampai akhir stream tidak ada token teks yang terkirim
+        if (!hasSentAnyToken) {
+            res.write(`data: ${JSON.stringify("Maaf, model tidak menghasilkan respons teks. Silakan coba kirim ulang pertanyaan Anda.")}\n\n`);
         }
 
         res.write("data: [DONE]\n\n");
