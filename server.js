@@ -28,7 +28,8 @@ app.post("/api/chat", async (req, res) => {
         const modelsToTry = [
             process.env.MODEL || "inclusionai/ling-3.2-flash:free",
             "liquid/lfm-3-1.7b:free",
-            "nvidia/nemotron-3.5-lightning:free"
+            "nvidia/nemotron-3.5-lightning:free",
+            "perplexity/pplx-decider-v1.3:free"
         ];
 
         let response = null;
