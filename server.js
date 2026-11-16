@@ -18,6 +18,7 @@ app.get("/", (req, res) => {
 app.post("/api/chat", async (req, res) => {
     try {
         const messages = req.body.messages;
+        const requestedModel = req.body.model;
 
         if (!messages || !Array.isArray(messages)) {
             return res.status(400).json({
@@ -26,10 +27,14 @@ app.post("/api/chat", async (req, res) => {
         }
 
         const modelsToTry = [
-            process.env.MODEL || "baidu/ernie-5.5-flash-preview:free",
-            "nvidia/nemotron-3.5-lightning:free",
-            "inclusionai/ling-3.2-flash:free",
-            "liquid/lfm-3-1.7b:free"
+            ...new Set([
+                requestedModel,
+                process.env.MODEL,
+                "baidu/ernie-5.5-flash-preview:free",
+                "nvidia/nemotron-3.5-lightning:free",
+                "inclusionai/ling-3.2-flash:free",
+                "liquid/lfm-3-1.7b:free"
+            ].filter(Boolean))
         ];
 
         let response = null;
